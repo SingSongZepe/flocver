@@ -1,3 +1,14 @@
 
 # threshold 
-BINARY_THRESHOLD = 170
+BINARY_THRESHOLD = 170  # from 170 to 220
+
+CANNY_THRESHOLD_1 = 100 
+CANNY_THRESHOLD_2 = 200 
+
+# kernel size
+DILATED_KERNEL_SIZE = (5, 5) # 
+MORPHOLOGY_KERNEL_SIZE = (10, 10) # from 10 to 18
+
+# iterations
+DILATED_ITERATIONS = 4 
+

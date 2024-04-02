@@ -2,10 +2,14 @@ import cv2
 import numpy as np
 import typing
 
+from PySide6.QtWidgets import QApplication, QLabel, QGridLayout, QWidget
+from PySide6.QtGui import QPixmap, QImage
+
 from value.value import *
 from value.strings import *
 from utils.show_image import show_single_image
 from algorithm.blur import *
+from algorithm.cvt_color import *
 from error.size_not_match import SizeNotMatch
 
 def main(path_pic: str):
@@ -44,7 +48,7 @@ def dilate(path_pic: str):
     edges = canny(path_pic)
 
     dilated_kernel = np.ones((5, 5), np.uint8)
-    dilated_edges = cv2.dilate(edges, dilated_kernel, iterations=5) 
+    dilated_edges = cv2.dilate(edges, dilated_kernel, iterations=4) 
 
     # show_single_image(dilated_edges)
     return dilated_edges
@@ -85,11 +89,72 @@ if __name__ == '__main__':
     # otsu(PATH_IMAGE_MEDIUM_2)
     # otsu(PATH_IMAGE_HARD_1)
     # canny(PATH_IMAGE_EASY_1)
-    dilated_image = morphology(dilate(PATH_IMAGE_EASY_1))
-    show_single_image(dilated_image)
-    bi = morphology(otsu(PATH_IMAGE_EASY_1))
-    bi_with_green = black2green(bi)
-    show_single_image(bi_with_green)
+    # dilated_image = morphology(dilate(PATH_IMAGE_EASY_1))
+    # # show_single_image(dilated_image)
+    # bi = morphology(otsu(PATH_IMAGE_HARD_1))
+    # bi_with_green = black2green(bi)
+    # # show_single_image(bi_with_green)
     
-    overlapped_image = overlap(dilated_image, bi_with_green)
-    show_single_image(overlapped_image)
+    # # overlapped_image = overlap(dilated_image, bi_with_green)
+    # # show_single_image(overlapped_image)
+
+    # a = cvt_color(bi, 0, (0, 255, 0))
+    # show_single_image(a)
+    
+    # easy 1
+    ie1 = morphology(otsu(PATH_IMAGE_EASY_1))
+    ce1 = cvt_color(ie1, 0, (0, 255, 0))
+    show_single_image(ce1)
+
+    # medium 2
+    im2 = morphology(otsu(PATH_IMAGE_MEDIUM_2))
+    cm2 = cvt_color(im2, 0, (0, 255, 0))
+    show_single_image(cm2)
+
+    # hard 3
+    ih3 = morphology(otsu(PATH_IMAGE_HARD_3))
+    ch3 = cvt_color(ih3, 0, (0, 255, 0))
+    show_single_image(ch3)
+
+    # horizontal_concatenated = cv2.hconcat([ce1, cm2, ch3])
+    # show_single_image(horizontal_concatenated)
+
+    # test for qt (pyside6)
+    app = QApplication([])
+    wgt = QWidget()
+    gl = QGridLayout()
+    lb1 = QLabel()
+    lb2 = QLabel()
+    lb3 = QLabel()
+
+    height, width, channel = ce1.shape
+    qimage1 = QImage(ce1.data, width, height, channel * width, QImage.Format_RGB888)
+    
+    height, width, channel = cm2.shape
+    qimage2 = QImage(cm2.data, width, height, channel * width, QImage.Format_RGB888)
+
+    height, width, channel = ch3.shape
+    qimage3 = QImage(ch3.data, width, height, channel * width, QImage.Format_RGB888)
+
+    qpixmap1 = QPixmap.fromImage(qimage1)
+    lb1.setPixmap(qpixmap1)
+
+    qpixmap2 = QPixmap.fromImage(qimage2)
+    lb2.setPixmap(qpixmap2)
+
+    qpixmap3 = QPixmap.fromImage(qimage3)
+    lb3.setPixmap(qpixmap3)
+
+    gl.addWidget(lb1, 0, 0)
+    gl.addWidget(lb2, 0, 1)
+    gl.addWidget(lb3, 1, 0)
+    wgt.setLayout(gl)
+    wgt.show()
+
+    app.exec()
+
+
+
+
+
+
