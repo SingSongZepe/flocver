@@ -3,6 +3,7 @@ import numpy as np
 
 from value.value import BINARY_THRESHOLD # 220 even more
 
+# input, gray_images are recommended
 def common_threshold(gray_image: np.array) -> np.array:
     _, binar_image = cv2.threshold(gray_image, BINARY_THRESHOLD, 255, cv2.THRESH_BINARY)
     return binar_image
