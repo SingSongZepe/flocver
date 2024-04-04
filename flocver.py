@@ -1,10 +1,13 @@
 import os
 import cv2
+from os.path import join as j
 
 from value.strings import *
 # utils
 from utils.show_image import show_single_image
 from utils.log import *
+from utils.make_dir import make_dir
+from utils.save_file import save_file
 from qt.show_in_one_view import show_in_one_view
 
 from algorithm.blur import *
@@ -27,9 +30,9 @@ class Flocver:
     def read_images(self) -> None:
         # just read the second dir
         for path in os.listdir(PATH_IMAGES):
-            if os.path.isdir(os.path.join(PATH_IMAGES, path)):
-                for path_ in os.listdir(os.path.join(PATH_IMAGES, path)):
-                    file = os.path.join(os.path.join(PATH_IMAGES, path), path_)
+            if os.path.isdir(j(PATH_IMAGES, path)):
+                for path_ in os.listdir(j(PATH_IMAGES, path)):
+                    file = j(j(PATH_IMAGES, path), path_)
                     if os.path.isfile(file):
                         self.images.append(cv2.imread(file))
                     else:
@@ -44,10 +47,19 @@ class Flocver:
 
     # make self.binary_images
     def convert2binary(self) -> None:
-        for image in self.gray_images:
+        for idx, image in enumerate(self.gray_images):
             # there you can select another algorithm common_threshold
             # but you need to select a suitable threshold value
-            self.binary_images.append(otsu_threshold(image))
+            if idx == 0:
+                self.binary_images.append(common_threshold(image, BINARY_THRESHOLD_EASY_1))
+            elif idx == 4:
+                self.binary_images.append(common_threshold(image, BINARY_THRESHOLD_HARD_2))
+            elif idx == 6:
+                self.binary_images.append(common_threshold(image, BINARY_THRESHOLD_MEDIUM_1))
+            elif idx == 8:
+                self.binary_images.append(common_threshold(image, BINARY_THRESHOLD_MEDIUM_3))
+            else:
+                self.binary_images.append(otsu_threshold(image))
         ln('convert all image to binary')
     
     # make self.cleaned_images
@@ -66,3 +78,23 @@ class Flocver:
 
     def show_result(self):
         show_in_one_view(self.result_images)
+
+    def save_result(self):
+        # check directory
+        easy_output_path = j(PATH_OUTPUT, EASY_)
+        medium_output_path = j(PATH_OUTPUT, MEDIUM_)
+        hard_output_path = j(PATH_OUTPUT, HARD_)
+        make_dir(easy_output_path)
+        make_dir(medium_output_path)
+        make_dir(hard_output_path)
+        
+        # easy
+        for idx, image in enumerate(self.result_images[:3]):
+            save_file(image, j(easy_output_path, EASY_ + f'_{idx + 1}.jpg'))
+        # medium
+        for idx, image in enumerate(self.result_images[3:6]):
+            save_file(image, j(hard_output_path, HARD_ + f'_{idx + 1}.jpg'))
+        # hard
+        for idx, image in enumerate(self.result_images[6:]):
+            save_file(image, j(medium_output_path, MEDIUM_ + f'_{idx + 1}.jpg'))
+            

@@ -13,15 +13,18 @@ from algorithm.blur import *
 from algorithm.cvt_color import *
 from error.size_not_match import SizeNotMatch
 
-def main(path_pic: str):
+def read_image(path_pic: str) -> np.array:
+    return cv2.imread(path_pic)
+
+def main(path_pic: str, threshold: int):
     image = cv2.imread(path_pic)
 
     # turn to gray
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    _, binary_image = cv2.threshold(gray_image, BINARY_THRESHOLD, 255, cv2.THRESH_BINARY)
+    _, binary_image = cv2.threshold(gray_image, threshold, 255, cv2.THRESH_BINARY)
     
-    show_single_image(binary_image)
+    return binary_image 
 
 
 # Otsu's algorithm
@@ -32,9 +35,9 @@ def otsu(path_pic: str) -> numpy.array:
 
     _, binary_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    blur_image = cvt_bilateral_blur(binary_image)
+    # blur_image = cvt_bilateral_blur(binary_image)
     # show_single_image(blur_image)
-    return blur_image
+    return binary_image
 
 # canny
 def canny(path_pic: str) -> numpy.array:
@@ -58,7 +61,7 @@ def dilate(path_pic: str):
 def morphology(binary_image) -> np.array:
 
     # there, range from 10 to 18
-    kernel = np.ones((20, 20), np.uint8)
+    kernel = np.ones(MORPHOLOGY_KERNEL_SIZE, np.uint8)
     cleaned_image = cv2.morphologyEx(binary_image, cv2.MORPH_OPEN, kernel)
 
     # show_single_image(cleaned_image)
@@ -93,6 +96,14 @@ def fill(binary_image: np.array) -> np.array:
 
     return cv2.bitwise_and(binary_image, mask)
 
+import cv2
+
+# def adaptive_thresholding(image: np.array, block_size: int = 13, constant: int = 2) -> np.array:
+#     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#     binary_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, block_size, constant)
+#     return binary_image
+
+
 # test algorithm
 if __name__ == '__main__':
     # otsu(PATH_IMAGE_EASY_1)
@@ -112,24 +123,24 @@ if __name__ == '__main__':
     # show_single_image(a)
     
     # easy 1
-    ie1 = morphology(otsu(PATH_IMAGE_EASY_1))
-    ce1 = cvt_color(ie1, 0, (0, 255, 0))
-    # show_single_image(ce1)
+    # ie1 = morphology(otsu(PATH_IMAGE_EASY_1))
+    # ce1 = cvt_color(ie1, 0, (0, 255, 0))
+    # # show_single_image(ce1)
 
-    # medium 2
-    im2 = morphology(otsu(PATH_IMAGE_MEDIUM_2))
-    cm2 = cvt_color(im2, 0, (0, 255, 0))
-    # show_single_image(cm2)
+    # # medium 2
+    # im2 = morphology(otsu(PATH_IMAGE_MEDIUM_2))
+    # cm2 = cvt_color(im2, 0, (0, 255, 0))
+    # # show_single_image(cm2)
 
-    # hard 2
-    ih2 = morphology(otsu(PATH_IMAGE_HARD_2))
-    ah2 = fill(ih2)
-    ch2 = cvt_color(ah2, 0, (0, 255, 0))
-    show_single_image(ch2)
+    # # hard 2
+    # ih2 = morphology(otsu(PATH_IMAGE_HARD_2))
+    # ah2 = fill(ih2)
+    # ch2 = cvt_color(ah2, 0, (0, 255, 0))
+    # show_single_image(ch2)
     
-    # hard 3
-    ih3 = morphology(otsu(PATH_IMAGE_HARD_3))
-    ch3 = cvt_color(ih3, 0, (0, 255, 0))
+    # # hard 3
+    # ih3 = morphology(otsu(PATH_IMAGE_HARD_3))
+    # ch3 = cvt_color(ih3, 0, (0, 255, 0))
     # show_single_image(ch3)
 
     # images = [ce1, cm2, ch3, ce1, cm2, ch3, ce1, cm2, ch3]
@@ -176,25 +187,41 @@ if __name__ == '__main__':
 
     # fill
     # image = cv2.imread(PATH_IMAGE_HARD_2)
-
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
     # ret, binary_image = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-
     # contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # # 创建一个和原图像大小一样的空白图像
     # mask = np.zeros_like(binary_image)
-
-    # # 填充轮廓
     # cv2.drawContours(mask, contours, -1, (255, 255, 255), thickness=cv2.FILLED)
-
-    # # 将填充后的图像与原图像进行合并
     # result = cv2.bitwise_and(binary_image, mask)
 
     # cv2.imshow('Filled Image', result)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
+
+    # test for fill
+    # hard 2
+    # bh2 = morphology(otsu(PATH_IMAGE_HARD_2))
+    # show_single_image(bh2)
+
+    # easy 1 hard 2 medium 1 3
+    # 
+    ih2 = morphology(main(PATH_IMAGE_HARD_2, BINARY_THRESHOLD_HARD_2))
+    # show_single_image(ih2)
+
+    im1 = morphology(main(PATH_IMAGE_MEDIUM_1, BINARY_THRESHOLD_MEDIUM_1))
+    # show_single_image(im1)
+
+    im3 = morphology(main(PATH_IMAGE_MEDIUM_3, BINARY_THRESHOLD_MEDIUM_3))
+    # show_single_image(im3)
+
+    ie1 = morphology(main(PATH_IMAGE_EASY_1, BINARY_THRESHOLD_EASY_1))
+    show_single_image(ie1)
+
+
+
+    # mh2 = morphology(adaptive_thresholding(read_image(PATH_IMAGE_HARD_2)))
+    # show_single_image(mh2)
+
 
 
 

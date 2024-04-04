@@ -10,6 +10,9 @@ IMAGE_SHOW_TITLE = 'sszp Image'
 # 
 PATH_IMAGES = './file/dataset/images'
 PATH_OUTPUT = './file/dataset/output'
+EASY_ = 'easy'
+MEDIUM_ = 'medium'
+HARD_ = 'hard'
 
 # picture path 
     # easy picture
